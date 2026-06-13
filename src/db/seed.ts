@@ -272,6 +272,7 @@ async function main() {
         telehealth: p.telehealth,
         acceptingNew: p.acceptingNew,
         languages: p.languages,
+        source: "curated",
       })
       .returning({ id: practitioners.id });
 

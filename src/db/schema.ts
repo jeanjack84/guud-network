@@ -40,6 +40,13 @@ export const practitioners = pgTable(
     telehealth: boolean("telehealth").notNull().default(false),
     acceptingNew: boolean("accepting_new").notNull().default(true),
     languages: text("languages").array().notNull(),
+    // Provenance: "curated" (verified humans), "npi" (US NPI registry directory),
+    // "community" (added by users).
+    source: text("source").notNull().default("curated"),
+    // National Provider Identifier (US), unique when present.
+    npi: text("npi").unique(),
+    credential: text("credential"), // e.g. "MD", "DO", "CNM"
+    phone: text("phone"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [index("practitioners_specialties_idx").on(t.specialties)],
@@ -67,6 +74,10 @@ export const reviews = pgTable(
     status: text("status").notNull().default("approved"),
     // Set true for seeded/known-real reviews.
     verified: boolean("verified").notNull().default(false),
+    // True for illustrative sample reviews seeded onto directory practitioners.
+    // Always surfaced with a visible "Sample" label so real named providers are
+    // never implied to have said something a real patient did not.
+    synthetic: boolean("synthetic").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [index("reviews_practitioner_idx").on(t.practitionerId)],

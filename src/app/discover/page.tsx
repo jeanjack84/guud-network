@@ -14,12 +14,15 @@ export default async function DiscoverPage({
   searchParams: Promise<{ topic?: string }>;
 }) {
   const { topic } = await searchParams;
-  const [cats, active, practitioners] = await Promise.all([
+  const [cats, active, allMatching] = await Promise.all([
     getCategories(),
     topic ? getCategoryBySlug(topic) : Promise.resolve(null),
     listPractitioners({ category: topic }),
   ]);
   const catMap = Object.fromEntries(cats.map((c) => [c.slug, c]));
+  const LIMIT = 48;
+  const practitioners = allMatching.slice(0, LIMIT);
+  const totalCount = allMatching.length;
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-12">
@@ -66,8 +69,16 @@ export default async function DiscoverPage({
         ))}
       </div>
 
+      {totalCount > 0 && (
+        <p className="mt-6 text-sm text-muted">
+          {totalCount} practitioner{totalCount === 1 ? "" : "s"}
+          {active ? ` for ${active.name}` : " in the network"}
+          {totalCount > LIMIT && ` · showing the top ${LIMIT} by trust`}
+        </p>
+      )}
+
       {/* Results */}
-      <div className="mt-10">
+      <div className="mt-8">
         {practitioners.length === 0 ? (
           <div className="rounded-xl2 border border-dashed border-line bg-surface/50 p-10 text-center">
             <p className="text-muted">

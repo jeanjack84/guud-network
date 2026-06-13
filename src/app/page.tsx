@@ -33,8 +33,8 @@ export default async function Home() {
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
             Describe what you&apos;re going through. We&apos;ll match you with
-            practitioners that other women have personally recommended for your
-            specific concern.
+            real practitioners — sourced from public registries and recommended
+            by women — for your specific concern.
           </p>
         </div>
 
@@ -61,6 +61,15 @@ export default async function Home() {
             </div>
           ))}
         </dl>
+
+        <p className="mx-auto mt-5 flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-xs text-muted">
+          <span>How the data works:</span>
+          <span className="text-plum">✦ Curated</span> verified by Guud ·
+          <span className="text-sage">🏛 Verified directory</span> real
+          providers from public registries ·
+          <span className="text-plum-dark">✿ Community</span> recommended by
+          women
+        </p>
       </section>
 
       {/* Browse by topic */}
@@ -126,8 +135,8 @@ export default async function Home() {
               d: "Every practitioner is ranked by real recommendations from women helped with that exact concern.",
             },
             {
-              t: "Built in the open",
-              d: "The Guud Network is free and open source. Anyone can use it, contribute, or run their own.",
+              t: "Real data, built in the open",
+              d: "Practitioners are real, pulled from public registries like the U.S. NPI. Recommendations are crowdsourced. Free and open source.",
             },
           ].map((b, i) => (
             <div key={b.t}>

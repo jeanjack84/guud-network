@@ -120,6 +120,7 @@ export async function recommendPractitioner(
       telehealth,
       acceptingNew: true,
       languages: ["English"],
+      source: "community",
     })
     .returning({ id: practitioners.id, slug: practitioners.slug });
 

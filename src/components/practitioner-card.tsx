@@ -3,6 +3,7 @@ import type { Category } from "@/db/schema";
 import type { PractitionerWithTrust } from "@/lib/queries";
 import { Stars } from "./stars";
 import { TrustBadge } from "./trust-badge";
+import { ProvenanceBadge, SampleTag } from "./provenance";
 
 function initials(name: string) {
   return name
@@ -21,6 +22,7 @@ export function PractitionerCard({
   p: PractitionerWithTrust;
   catMap: Record<string, Category>;
 }) {
+  const hasReviews = p.trust.reviewCount > 0;
   return (
     <Link
       href={`/practitioners/${p.slug}`}
@@ -34,32 +36,42 @@ export function PractitionerCard({
           <h3 className="font-display text-lg leading-tight text-ink group-hover:text-plum">
             {p.name}
           </h3>
-          <p className="text-sm text-muted">{p.title}</p>
+          <p className="truncate text-sm text-muted">{p.title}</p>
           <p className="mt-0.5 text-xs text-muted">
-            {p.city}, {p.country}
+            {p.city}
             {p.telehealth && (
               <span className="ml-2 text-sage">· online available</span>
             )}
           </p>
         </div>
-        <TrustBadge score={p.trust.score} />
+        {hasReviews && <TrustBadge score={p.trust.score} />}
       </div>
 
-      <div className="mt-3 flex items-center gap-2 text-xs text-muted">
-        <Stars rating={p.trust.avgRating} />
-        <span>
-          {p.trust.avgRating.toFixed(1)} · {p.trust.reviewCount}{" "}
-          {p.trust.reviewCount === 1 ? "recommendation" : "recommendations"}
-        </span>
+      <div className="mt-3 flex items-center gap-2">
+        <ProvenanceBadge source={p.source} />
+        {hasReviews ? (
+          <span className="flex items-center gap-1.5 text-xs text-muted">
+            <Stars rating={p.trust.avgRating} />
+            {p.trust.avgRating.toFixed(1)} · {p.trust.reviewCount}
+          </span>
+        ) : (
+          <span className="text-xs text-muted">No recommendations yet</span>
+        )}
       </div>
 
-      {p.topReview && (
+      {hasReviews && p.topReview ? (
         <blockquote className="mt-4 border-l-2 border-rose/60 pl-3 text-sm italic leading-relaxed text-ink/80">
-          &ldquo;{truncate(p.topReview.body, 160)}&rdquo;
-          <span className="mt-1 block text-xs not-italic text-muted">
+          &ldquo;{truncate(p.topReview.body, 150)}&rdquo;
+          <span className="mt-1 flex items-center gap-1.5 text-xs not-italic text-muted">
             — {p.topReview.authorName}
+            {p.topReview.synthetic && <SampleTag />}
           </span>
         </blockquote>
+      ) : (
+        <p className="mt-4 text-sm leading-relaxed text-muted">
+          Real provider from the U.S. registry.{" "}
+          <span className="text-plum">Be the first to recommend them →</span>
+        </p>
       )}
 
       <div className="mt-4 flex flex-wrap gap-1.5">

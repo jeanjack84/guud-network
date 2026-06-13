@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Stars } from "@/components/stars";
 import { TrustBadge } from "@/components/trust-badge";
+import { ProvenanceBadge, SampleTag } from "@/components/provenance";
 import { ReviewForm } from "@/components/review-form";
 import { getCategories, getPractitionerBySlug } from "@/lib/queries";
 import { synthesiseTrust } from "@/lib/ai";
@@ -42,6 +43,9 @@ export default async function PractitionerPage({
   ]);
   if (!p) notFound();
   const catMap = Object.fromEntries(cats.map((c) => [c.slug, c]));
+  const realReviews = p.reviews.filter((r) => !r.synthetic);
+  const hasSamples = p.reviews.some((r) => r.synthetic);
+  const hasReviews = p.reviews.length > 0;
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-12">
@@ -68,19 +72,27 @@ export default async function PractitionerPage({
             <div>
               <h1 className="font-display text-3xl text-ink">{p.name}</h1>
               <p className="text-muted">{p.title}</p>
+              <div className="mt-1.5">
+                <ProvenanceBadge source={p.source} />
+              </div>
             </div>
-            <TrustBadge score={p.trust.score} />
+            {hasReviews && <TrustBadge score={p.trust.score} />}
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
-            <span className="flex items-center gap-1.5">
-              <Stars rating={p.trust.avgRating} />
-              {p.trust.avgRating.toFixed(1)} · {p.trust.reviewCount}{" "}
-              {p.trust.reviewCount === 1 ? "recommendation" : "recommendations"}
-            </span>
-            <span>
-              📍 {p.city}, {p.country}
-            </span>
+            {hasReviews && (
+              <span className="flex items-center gap-1.5">
+                <Stars rating={p.trust.avgRating} />
+                {p.trust.avgRating.toFixed(1)} · {p.trust.reviewCount}{" "}
+                {p.trust.reviewCount === 1 ? "recommendation" : "recommendations"}
+              </span>
+            )}
+            <span>📍 {p.city}, {p.country}</span>
             {p.telehealth && <span className="text-sage">💻 Online available</span>}
+            {p.phone && (
+              <a href={`tel:${p.phone}`} className="hover:text-plum">
+                📞 {p.phone}
+              </a>
+            )}
             <span>🗣️ {p.languages.join(", ")}</span>
           </div>
           <div className="mt-3 flex flex-wrap gap-1.5">
@@ -99,29 +111,51 @@ export default async function PractitionerPage({
 
       <p className="mt-5 leading-relaxed text-ink/80">{p.bio}</p>
 
-      {/* AI synthesis (streamed) */}
-      <div className="mt-6">
-        <Suspense
-          fallback={
-            <div className="animate-pulse rounded-xl2 bg-blush/40 p-5">
-              <div className="h-3 w-56 rounded bg-rose/30" />
-              <div className="mt-3 h-4 w-full rounded bg-rose/20" />
-              <div className="mt-2 h-4 w-2/3 rounded bg-rose/20" />
-            </div>
-          }
-        >
-          <TrustSynthesis
-            name={p.name}
-            bodies={p.reviews.map((r) => ({ body: r.body }))}
-          />
-        </Suspense>
-      </div>
+      {/* AI synthesis (streamed) — only over REAL reviews, never sample data. */}
+      {realReviews.length > 0 && (
+        <div className="mt-6">
+          <Suspense
+            fallback={
+              <div className="animate-pulse rounded-xl2 bg-blush/40 p-5">
+                <div className="h-3 w-56 rounded bg-rose/30" />
+                <div className="mt-3 h-4 w-full rounded bg-rose/20" />
+                <div className="mt-2 h-4 w-2/3 rounded bg-rose/20" />
+              </div>
+            }
+          >
+            <TrustSynthesis
+              name={p.name}
+              bodies={realReviews.map((r) => ({ body: r.body }))}
+            />
+          </Suspense>
+        </div>
+      )}
+
+      {p.source === "npi" && (
+        <p className="mt-6 rounded-xl border border-line bg-sage-soft/50 px-4 py-3 text-sm text-ink/75">
+          🏛 Listed from the public U.S. NPI registry (real provider). The
+          recommendations below are illustrative samples — add a real one to help
+          other women.
+        </p>
+      )}
 
       {/* Reviews */}
       <section className="mt-10">
         <h2 className="font-display text-2xl text-ink">
           Recommendations ({p.reviews.length})
         </h2>
+        {hasSamples && (
+          <p className="mt-2 text-sm text-muted">
+            <SampleTag /> recommendations are illustrative, shown to demonstrate
+            the experience. Real recommendations come from the Guud community.
+          </p>
+        )}
+        {p.reviews.length === 0 && (
+          <p className="mt-3 rounded-xl border border-dashed border-line bg-cream px-4 py-6 text-center text-sm text-muted">
+            No recommendations yet. If this provider helped you, you could be the
+            first to help the next woman find them.
+          </p>
+        )}
         <div className="mt-4 space-y-4">
           {p.reviews.map((r) => (
             <article
@@ -141,6 +175,7 @@ export default async function PractitionerPage({
                       verified
                     </span>
                   )}
+                  {r.synthetic && <SampleTag />}
                 </div>
                 <Stars rating={r.rating} />
               </div>
