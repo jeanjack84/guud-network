@@ -1,0 +1,173 @@
+import { Suspense } from "react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Stars } from "@/components/stars";
+import { TrustBadge } from "@/components/trust-badge";
+import { ReviewForm } from "@/components/review-form";
+import { getCategories, getPractitionerBySlug } from "@/lib/queries";
+import { synthesiseTrust } from "@/lib/ai";
+
+export const dynamic = "force-dynamic";
+
+async function TrustSynthesis({
+  name,
+  bodies,
+}: {
+  name: string;
+  bodies: { body: string }[];
+}) {
+  const summary = await synthesiseTrust(name, bodies);
+  if (!summary) return null;
+  return (
+    <div className="rounded-xl2 bg-blush/70 p-5">
+      <p className="text-xs font-medium uppercase tracking-wide text-plum/70">
+        Why women trust her · summarised by Claude Opus 4.8
+      </p>
+      <p className="mt-2 font-display text-lg leading-relaxed text-plum-dark">
+        {summary}
+      </p>
+    </div>
+  );
+}
+
+export default async function PractitionerPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const [p, cats] = await Promise.all([
+    getPractitionerBySlug(slug),
+    getCategories(),
+  ]);
+  if (!p) notFound();
+  const catMap = Object.fromEntries(cats.map((c) => [c.slug, c]));
+
+  return (
+    <div className="mx-auto max-w-3xl px-5 py-12">
+      <Link
+        href="/discover"
+        className="text-sm text-muted transition hover:text-plum"
+      >
+        ← Back to the network
+      </Link>
+
+      {/* Header */}
+      <div className="mt-5 flex flex-col gap-4 rounded-xl2 border border-line bg-surface p-7 sm:flex-row sm:items-start">
+        <span className="grid h-20 w-20 shrink-0 place-items-center rounded-full bg-blush font-display text-2xl text-plum">
+          {p.name
+            .replace(/^Dr\.?\s+/i, "")
+            .split(" ")
+            .map((w) => w[0])
+            .slice(0, 2)
+            .join("")
+            .toUpperCase()}
+        </span>
+        <div className="flex-1">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h1 className="font-display text-3xl text-ink">{p.name}</h1>
+              <p className="text-muted">{p.title}</p>
+            </div>
+            <TrustBadge score={p.trust.score} />
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
+            <span className="flex items-center gap-1.5">
+              <Stars rating={p.trust.avgRating} />
+              {p.trust.avgRating.toFixed(1)} · {p.trust.reviewCount}{" "}
+              {p.trust.reviewCount === 1 ? "recommendation" : "recommendations"}
+            </span>
+            <span>
+              📍 {p.city}, {p.country}
+            </span>
+            {p.telehealth && <span className="text-sage">💻 Online available</span>}
+            <span>🗣️ {p.languages.join(", ")}</span>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {p.specialties.map((s) => (
+              <Link
+                key={s}
+                href={`/discover?topic=${s}`}
+                className="rounded-full bg-cream px-2.5 py-1 text-xs text-muted ring-1 ring-line transition hover:text-plum"
+              >
+                {catMap[s]?.emoji} {catMap[s]?.name ?? s}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <p className="mt-5 leading-relaxed text-ink/80">{p.bio}</p>
+
+      {/* AI synthesis (streamed) */}
+      <div className="mt-6">
+        <Suspense
+          fallback={
+            <div className="animate-pulse rounded-xl2 bg-blush/40 p-5">
+              <div className="h-3 w-56 rounded bg-rose/30" />
+              <div className="mt-3 h-4 w-full rounded bg-rose/20" />
+              <div className="mt-2 h-4 w-2/3 rounded bg-rose/20" />
+            </div>
+          }
+        >
+          <TrustSynthesis
+            name={p.name}
+            bodies={p.reviews.map((r) => ({ body: r.body }))}
+          />
+        </Suspense>
+      </div>
+
+      {/* Reviews */}
+      <section className="mt-10">
+        <h2 className="font-display text-2xl text-ink">
+          Recommendations ({p.reviews.length})
+        </h2>
+        <div className="mt-4 space-y-4">
+          {p.reviews.map((r) => (
+            <article
+              key={r.id}
+              className="rounded-xl2 border border-line bg-surface p-5"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-sage-soft text-xs font-medium text-sage">
+                    {r.authorName.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="text-sm font-medium text-ink">
+                    {r.authorName}
+                  </span>
+                  {r.verified && (
+                    <span className="rounded-full bg-sage-soft px-2 py-0.5 text-[10px] font-medium text-sage">
+                      verified
+                    </span>
+                  )}
+                </div>
+                <Stars rating={r.rating} />
+              </div>
+              <p className="mt-3 leading-relaxed text-ink/85">{r.body}</p>
+              <p className="mt-2 text-xs text-muted">
+                Helped with {catMap[r.helpedWith]?.name ?? r.helpedWith}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Add recommendation */}
+      <section className="mt-12 rounded-xl2 border border-line bg-surface p-7">
+        <h2 className="font-display text-2xl text-ink">
+          Were you helped by {p.name.split(" ").slice(-1)}?
+        </h2>
+        <p className="mt-1 mb-5 text-sm text-muted">
+          Your recommendation could be the reason another woman finally gets the
+          care she deserves.
+        </p>
+        <ReviewForm
+          practitionerId={p.id}
+          specialties={p.specialties}
+          catMap={catMap}
+        />
+      </section>
+    </div>
+  );
+}
