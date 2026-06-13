@@ -47,6 +47,10 @@ export const practitioners = pgTable(
     npi: text("npi").unique(),
     credential: text("credential"), // e.g. "MD", "DO", "CNM"
     phone: text("phone"),
+    // Official registry id (e.g. NL BIG number) and whether we confirmed an
+    // active registration against the official register.
+    registryId: text("registry_id"),
+    registryVerified: boolean("registry_verified").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [index("practitioners_specialties_idx").on(t.specialties)],

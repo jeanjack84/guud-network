@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { practitioners, reviews, demandSignups } from "@/db/schema";
 import { moderateReview } from "@/lib/ai";
+import { verifyPractitioner, isNetherlands } from "@/lib/big";
 import { getCategories } from "@/lib/queries";
 import { eq } from "drizzle-orm";
 
@@ -139,22 +140,31 @@ export async function recommendPractitioner(
   const status = mod.allow ? "approved" : "pending";
   const slug = slugify(name);
 
+  // For Dutch practitioners, confirm an active BIG registration (official register).
+  const big = isNetherlands(country) ? await verifyPractitioner(name) : null;
+
   const [created] = await db
     .insert(practitioners)
     .values({
       slug,
       name,
-      title,
+      title: big ? `${title} · ${big.profession}` : title,
       specialties: [topic],
       city,
       country,
-      bio: `Recommended by the Guud community for ${
-        cats.find((c) => c.slug === topic)?.name ?? "women's health"
-      }.`,
+      bio: big
+        ? `Recommended by the Guud community for ${
+            cats.find((c) => c.slug === topic)?.name ?? "women's health"
+          }. Confirmed in the Dutch BIG register (no. ${big.bigNumber}).`
+        : `Recommended by the Guud community for ${
+            cats.find((c) => c.slug === topic)?.name ?? "women's health"
+          }.`,
       telehealth,
       acceptingNew: true,
-      languages: ["English"],
+      languages: isNetherlands(country) ? ["Dutch", "English"] : ["English"],
       source: "community",
+      registryId: big?.bigNumber ?? null,
+      registryVerified: !!big,
     })
     .returning({ id: practitioners.id, slug: practitioners.slug });
 

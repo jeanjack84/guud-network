@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Stars } from "@/components/stars";
 import { TrustBadge } from "@/components/trust-badge";
-import { ProvenanceBadge, SampleTag } from "@/components/provenance";
+import { ProvenanceBadge, SampleTag, RegistryBadge } from "@/components/provenance";
 import { ShareButton } from "@/components/share-button";
 import { ReviewForm } from "@/components/review-form";
 import { getCategories, getPractitionerBySlug } from "@/lib/queries";
@@ -126,8 +126,9 @@ export default async function PractitionerPage({
             <div>
               <h1 className="font-display text-3xl text-ink">{p.name}</h1>
               <p className="text-muted">{p.title}</p>
-              <div className="mt-1.5">
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
                 <ProvenanceBadge source={p.source} />
+                {p.registryVerified && <RegistryBadge registryId={p.registryId} />}
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">

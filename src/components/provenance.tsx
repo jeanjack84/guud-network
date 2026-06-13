@@ -35,6 +35,21 @@ export function ProvenanceBadge({ source }: { source: string }) {
   );
 }
 
+export function RegistryBadge({ registryId }: { registryId?: string | null }) {
+  return (
+    <span
+      title={
+        registryId
+          ? `Confirmed active in the Dutch BIG register (no. ${registryId})`
+          : "Confirmed in an official healthcare register"
+      }
+      className="inline-flex items-center gap-1 rounded-full bg-sage-soft px-2 py-0.5 text-[11px] font-medium text-sage"
+    >
+      <span aria-hidden>✓</span> BIG-verified
+    </span>
+  );
+}
+
 export function SampleTag() {
   return (
     <span

@@ -3,7 +3,7 @@ import type { Category } from "@/db/schema";
 import type { PractitionerWithTrust } from "@/lib/queries";
 import { Stars } from "./stars";
 import { TrustBadge } from "./trust-badge";
-import { ProvenanceBadge, SampleTag } from "./provenance";
+import { ProvenanceBadge, SampleTag, RegistryBadge } from "./provenance";
 
 function initials(name: string) {
   return name
@@ -48,8 +48,9 @@ export function PractitionerCard({
         {hasReviews && <TrustBadge score={p.trust.score} />}
       </div>
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <ProvenanceBadge source={p.source} />
+        {p.registryVerified && <RegistryBadge registryId={p.registryId} />}
         {hasReviews ? (
           <span className="flex items-center gap-1.5 text-xs text-muted">
             <Stars rating={p.trust.avgRating} />
