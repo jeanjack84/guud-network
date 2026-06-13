@@ -44,7 +44,7 @@ export async function interpretSymptoms(
         matchedCategories: z
           .array(z.string())
           .describe(
-            "Slugs of the 1-3 most relevant topics from the provided list, most relevant first.",
+            "Slugs of the 1-3 most relevant topics from the provided list, most relevant first. Return an EMPTY array if the message is not a women's-health concern (gibberish, a test, or an unrelated topic) — do not force a match.",
           ),
         safetyNote: z
           .string()
@@ -60,7 +60,7 @@ export async function interpretSymptoms(
           ),
       }),
       system:
-        "You are the triage heart of The Guud Network, a trust-first platform helping people find women's-health practitioners others recommend. You are warm, validating, and never dismissive of pain. You only choose topic slugs from the list given. You are NOT a doctor: never diagnose, and never give clinical verdicts about what is normal, abnormal, safe, or not worrying (e.g. do not say 'that's completely normal' or 'nothing to worry about'). Validate feelings and route to the right kind of help only. Honour the person's stated identity and never reduce it. If they describe a possible emergency, prioritise the safety note.",
+        "You are the triage heart of The Guud Network, a trust-first platform helping people find women's-health practitioners others recommend. You are warm, validating, and never dismissive of pain. You only choose topic slugs from the list given. You are NOT a doctor: never diagnose, and never give clinical verdicts about what is normal, abnormal, safe, or not worrying (e.g. do not say 'that's completely normal' or 'nothing to worry about'). Validate feelings and route to the right kind of help only. Honour the person's stated identity and never reduce it. NEVER promise something the network may not have: do not promise free, low-cost, sliding-scale, or insurance-accepted care, a practitioner who speaks a specific language, or one in a specific place — you do not have that data and a broken promise re-enacts the dismissal this platform exists to fight. Acknowledge those needs and say we'll look, without guaranteeing. If they describe a possible emergency, prioritise the safety note.",
       prompt: `A woman wrote:\n\n"""${query}"""\n\nAvailable topics:\n${catList}\n\nInterpret with empathy and map her to the most relevant topics.`,
     });
 
@@ -69,11 +69,11 @@ export async function interpretSymptoms(
       .filter((s) => valid.has(s))
       .slice(0, 3);
 
+    // Respect a deliberately empty result — the query wasn't a women's-health
+    // concern. Don't force a catch-all category.
     return {
       empathy: object.empathy,
-      matchedCategories: matchedCategories.length
-        ? matchedCategories
-        : keywordFallback(query, cats),
+      matchedCategories,
       safetyNote: object.safetyNote,
       detectedLocation: object.detectedLocation,
     };
@@ -164,5 +164,6 @@ function keywordFallback(query: string, cats: Category[]): string[] {
       q.includes(c.name.toLowerCase()) ||
       c.slug.split("-").some((w) => w.length > 3 && q.includes(w)),
   );
-  return (hits.length ? hits : cats.slice(0, 1)).map((c) => c.slug).slice(0, 3);
+  // No default catch-all: if nothing matches, return nothing (honest no-match).
+  return hits.map((c) => c.slug).slice(0, 3);
 }

@@ -27,7 +27,6 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<MatchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showPractitioners, setShowPractitioners] = useState(false);
 
   async function run(q: string) {
     const text = q.trim();
@@ -38,7 +37,6 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
     setLoading(true);
     setError(null);
     setResult(null);
-    setShowPractitioners(false);
     try {
       const res = await fetch("/api/match", {
         method: "POST",
@@ -56,6 +54,22 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
   }
 
   const emergency = !!result?.safetyNote;
+
+  // Region-aware emergency numbers driven by the detected/declared location.
+  function emergencyNumbers(loc: string | null): { num: string; label: string }[] {
+    const q = (loc ?? "").toLowerCase();
+    if (/\b(uk|united kingdom|england|scotland|wales|britain|london)\b/.test(q))
+      return [{ num: "999", label: "Call 999 (UK)" }];
+    if (/\b(usa|us|united states|america|u\.s)\b/.test(q) || /, ?[a-z]{2}\b/.test(q))
+      return [{ num: "911", label: "Call 911 (US)" }];
+    if (/netherlands|belgium|germany|denmark|italy|france|spain|europe|eu\b/.test(q))
+      return [{ num: "112", label: "Call 112 (EU)" }];
+    return [
+      { num: "911", label: "911 (US)" },
+      { num: "112", label: "112 (EU)" },
+      { num: "999", label: "999 (UK)" },
+    ];
+  }
 
   return (
     <div className="w-full">
@@ -172,15 +186,15 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
               </h2>
               <p className="mt-2 text-ink">{result.safetyNote}</p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <a href="tel:911" className="rounded-full bg-plum px-4 py-2 text-sm font-medium text-cream hover:bg-plum-dark">
-                  📞 Call 911 (US)
-                </a>
-                <a href="tel:112" className="rounded-full bg-plum px-4 py-2 text-sm font-medium text-cream hover:bg-plum-dark">
-                  📞 Call 112 (EU)
-                </a>
-                <a href="tel:999" className="rounded-full bg-plum px-4 py-2 text-sm font-medium text-cream hover:bg-plum-dark">
-                  📞 Call 999 (UK)
-                </a>
+                {emergencyNumbers(result.location).map((e) => (
+                  <a
+                    key={e.num}
+                    href={`tel:${e.num}`}
+                    className="rounded-full bg-plum px-4 py-2 text-sm font-medium text-cream hover:bg-plum-dark"
+                  >
+                    📞 {e.label}
+                  </a>
+                ))}
                 <a
                   href="https://findahelpline.com"
                   target="_blank"
@@ -190,14 +204,9 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
                   Find a helpline near you →
                 </a>
               </div>
-              {result.practitioners.length > 0 && !showPractitioners && (
-                <button
-                  onClick={() => setShowPractitioners(true)}
-                  className="mt-4 text-sm text-muted underline hover:text-plum"
-                >
-                  I&apos;m safe — show practitioners anyway
-                </button>
-              )}
+              <p className="mt-3 text-xs text-muted">
+                Not sure of the number? Call your local emergency number.
+              </p>
             </div>
           ) : null}
 
@@ -208,7 +217,7 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
             </div>
           )}
 
-          {(!emergency || showPractitioners) &&
+          {!emergency &&
             (result.practitioners.length > 0 ? (
               <div>
                 <h2 className="mb-4 font-display text-xl text-ink">

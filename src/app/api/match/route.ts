@@ -43,6 +43,21 @@ export async function POST(request: Request) {
   const match = await interpretSymptoms(query.trim(), cats);
   const catMap = Object.fromEntries(cats.map((c) => [c.slug, c]));
 
+  // Honest no-match: the message wasn't a women's-health concern.
+  if (match.matchedCategories.length === 0 && !match.safetyNote) {
+    return Response.json({
+      empathy:
+        "I'm here for women's health. Tell me what you're feeling or going through — even a few plain words — and I'll help you find someone you can trust.",
+      safetyNote: null,
+      emergency: false,
+      regionNote: null,
+      location: null,
+      offTopic: true,
+      matchedCategories: [],
+      practitioners: [],
+    });
+  }
+
   // Use the explicit field if given, else the location parsed from the query.
   const loc = explicitLoc || match.detectedLocation || "";
   // Relevance: the first matched topic is the most relevant one.
@@ -90,7 +105,7 @@ export async function POST(request: Request) {
     regionNote,
     location: loc || null,
     matchedCategories: match.matchedCategories.map((s) => catMap[s]).filter(Boolean),
-    // In an emergency the directory is subordinate to getting urgent help.
-    practitioners: match.safetyNote ? practitioners.slice(0, 3) : practitioners,
+    // In an emergency, getting urgent help comes first — omit the directory.
+    practitioners: match.safetyNote ? [] : practitioners,
   });
 }

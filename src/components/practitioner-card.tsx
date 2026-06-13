@@ -42,6 +42,7 @@ export function PractitionerCard({
             {p.telehealth && (
               <span className="ml-2 text-sage">· online available</span>
             )}
+            {p.phone && <span className="ml-2">· 📞 {p.phone}</span>}
           </p>
         </div>
         {hasReviews && <TrustBadge score={p.trust.score} />}
