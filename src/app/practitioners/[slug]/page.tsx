@@ -193,6 +193,20 @@ export default async function PractitionerPage({
         </div>
       )}
 
+      {p.registryVerified && p.registryId && (
+        <p className="mt-6 rounded-xl border border-sage/40 bg-sage-soft/50 px-4 py-3 text-sm text-ink/80">
+          ✓ Confirmed active in the Dutch BIG register (no. {p.registryId}).{" "}
+          <a
+            href="https://zoeken.bigregister.nl"
+            target="_blank"
+            rel="noreferrer"
+            className="text-plum underline"
+          >
+            Verify in the BIG register ↗
+          </a>
+        </p>
+      )}
+
       {p.source === "npi" && (
         <p className="mt-6 rounded-xl border border-line bg-sage-soft/50 px-4 py-3 text-sm text-ink/75">
           🏛 Listed in the public U.S. NPI registry — a real provider, but not
