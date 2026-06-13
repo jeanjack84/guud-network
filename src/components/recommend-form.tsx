@@ -10,12 +10,22 @@ const initial: ActionState = { ok: false, message: "" };
 const field =
   "w-full rounded-xl border border-line bg-cream px-3 py-2.5 text-sm text-ink outline-none focus:border-plum";
 
-export function RecommendForm({ cats }: { cats: Category[] }) {
+export function RecommendForm({
+  cats,
+  defaults,
+}: {
+  cats: Category[];
+  defaults?: { topic?: string; city?: string; country?: string };
+}) {
   const [state, action, pending] = useActionState(
     recommendPractitioner,
     initial,
   );
   const [rating, setRating] = useState(5);
+  const topicDefault =
+    defaults?.topic && cats.some((c) => c.slug === defaults.topic)
+      ? defaults.topic
+      : cats[0]?.slug;
 
   if (state.ok) {
     return (
@@ -56,7 +66,13 @@ export function RecommendForm({ cats }: { cats: Category[] }) {
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-ink">City</label>
-          <input name="city" required placeholder="Amsterdam" className={field} />
+          <input
+            name="city"
+            required
+            defaultValue={defaults?.city}
+            placeholder="Amsterdam"
+            className={field}
+          />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-ink">
@@ -65,6 +81,7 @@ export function RecommendForm({ cats }: { cats: Category[] }) {
           <input
             name="country"
             required
+            defaultValue={defaults?.country}
             placeholder="Netherlands"
             className={field}
           />
@@ -75,7 +92,7 @@ export function RecommendForm({ cats }: { cats: Category[] }) {
         <label className="mb-1 block text-sm font-medium text-ink">
           What do they help with?
         </label>
-        <select name="topic" defaultValue={cats[0]?.slug} className={field}>
+        <select name="topic" defaultValue={topicDefault} className={field}>
           {cats.map((c) => (
             <option key={c.slug} value={c.slug}>
               {c.name}

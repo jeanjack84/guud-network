@@ -65,7 +65,10 @@ export function DemandCapture({
       )}
       <p className="mt-3 text-sm text-muted">
         Know someone good{location ? ` in ${location}` : ""}?{" "}
-        <Link href="/practitioners/new" className="text-plum underline">
+        <Link
+          href={`/practitioners/new?topic=${encodeURIComponent(topics[0] ?? "")}&loc=${encodeURIComponent(location ?? "")}`}
+          className="text-plum underline"
+        >
           Recommend a practitioner
         </Link>{" "}
         and help the next woman find them.

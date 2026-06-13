@@ -235,7 +235,10 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
                 </div>
                 <p className="mt-4 text-sm text-muted">
                   Helped by someone who isn&apos;t here?{" "}
-                  <Link href="/practitioners/new" className="text-plum underline">
+                  <Link
+                    href={`/practitioners/new?topic=${encodeURIComponent(result.matchedCategories[0]?.slug ?? "")}&loc=${encodeURIComponent(result.location ?? "")}`}
+                    className="text-plum underline"
+                  >
                     Recommend a practitioner
                   </Link>{" "}
                   and grow the network.
