@@ -1,22 +1,48 @@
 @import "tailwindcss";
 
-@theme inline {
-  /* Brand palette — warm, calm, trustworthy. */
-  --color-cream: #faf6f1;
-  --color-surface: #ffffff;
-  --color-ink: #2d2530;
-  --color-muted: #6f6470;
-  --color-plum: #7a2e5d;
-  --color-plum-dark: #5d2147;
-  --color-rose: #d98aa8;
-  --color-blush: #f6e6ec;
-  --color-sage: #6f8f6b;
-  --color-sage-soft: #e7efe3;
-  --color-gold: #c9a24b;
-  --color-line: #ece3da;
+/* ─── Guud brand webfonts (from guud-theme) ─────────────────────────── */
+@font-face {
+  font-family: "Nib Pro";
+  src: url("/fonts/NibPro-Regular.woff2") format("woff2"),
+    url("/fonts/NibPro-Regular.woff") format("woff");
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Hurme Geometric Sans 4";
+  src: url("/fonts/HurmeGeometricSans4-Regular.woff2") format("woff2"),
+    url("/fonts/HurmeGeometricSans4-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Hurme Geometric Sans 4";
+  src: url("/fonts/HurmeGeometricSans4-SemiBold.woff2") format("woff2"),
+    url("/fonts/HurmeGeometricSans4-SemiBold.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
 
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-display: var(--font-fraunces), Georgia, serif;
+@theme inline {
+  /* Guud palette — warm, earthy, trustworthy (sourced from guud-theme). */
+  --color-cream: #f7f6f4; /* warm page background */
+  --color-surface: #ffffff;
+  --color-ink: #1c1b1b; /* near-black headings/text */
+  --color-muted: #6a6a6a; /* secondary text */
+  --color-plum: #893400; /* PRIMARY — Guud terracotta */
+  --color-plum-dark: #6b2800; /* primary hover */
+  --color-rose: #f94c43; /* coral accent */
+  --color-blush: #f6ece1; /* soft beige highlight (article-takeaway) */
+  --color-sage: #a17c5e; /* mocha — secondary/positive */
+  --color-sage-soft: #f1e4d8; /* light beige surface */
+  --color-gold: #d99a2b; /* honey gold — stars */
+  --color-line: #ece3da; /* warm hairline */
+
+  --font-sans: "Hurme Geometric Sans 4", system-ui, sans-serif;
+  --font-display: "Nib Pro", Georgia, serif;
 
   --radius-xl2: 1.75rem;
 }
@@ -34,10 +60,10 @@ body {
 
 .font-display {
   font-family: var(--font-display);
-  font-optical-sizing: auto;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
-/* Subtle entrance for cards/sections. */
 @keyframes rise {
   from {
     opacity: 0;
