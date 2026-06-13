@@ -16,6 +16,7 @@ export type MatchResult = {
   empathy: string;
   matchedCategories: string[];
   safetyNote: string | null;
+  detectedLocation: string | null;
 };
 
 /**
@@ -51,6 +52,12 @@ export async function interpretSymptoms(
           .describe(
             "If she describes a possible emergency (e.g. heavy bleeding with fainting, severe sudden pain, thoughts of self-harm), a brief note to seek urgent/emergency care. Otherwise null.",
           ),
+        detectedLocation: z
+          .string()
+          .nullable()
+          .describe(
+            "Any place the person mentions they are or want care (city/region/country), normalised like 'Chicago, IL, USA', 'rural Montana, USA', or 'London, UK'. null if none mentioned.",
+          ),
       }),
       system:
         "You are the triage heart of The Guud Network, a trust-first platform helping people find women's-health practitioners others recommend. You are warm, validating, and never dismissive of pain. You only choose topic slugs from the list given. You are NOT a doctor: never diagnose, and never give clinical verdicts about what is normal, abnormal, safe, or not worrying (e.g. do not say 'that's completely normal' or 'nothing to worry about'). Validate feelings and route to the right kind of help only. Honour the person's stated identity and never reduce it. If they describe a possible emergency, prioritise the safety note.",
@@ -68,6 +75,7 @@ export async function interpretSymptoms(
         ? matchedCategories
         : keywordFallback(query, cats),
       safetyNote: object.safetyNote,
+      detectedLocation: object.detectedLocation,
     };
   } catch (err) {
     console.error("interpretSymptoms failed, using keyword fallback:", err);
@@ -76,6 +84,7 @@ export async function interpretSymptoms(
         "Thank you for sharing. Here are practitioners other women trust for what you described.",
       matchedCategories: keywordFallback(query, cats),
       safetyNote: null,
+      detectedLocation: null,
     };
   }
 }
