@@ -9,10 +9,10 @@ const MAP: Record<
     title: "Verified by the Guud team",
   },
   npi: {
-    label: "Verified directory",
+    label: "NPI registry",
     cls: "bg-sage-soft text-sage ring-1 ring-sage/20",
     icon: "🏛",
-    title: "Real provider from the U.S. NPI registry",
+    title: "Listed in the public U.S. NPI registry — not vetted or endorsed by Guud",
   },
   community: {
     label: "Community",

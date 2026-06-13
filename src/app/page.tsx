@@ -64,9 +64,9 @@ export default async function Home() {
 
         <p className="mx-auto mt-5 flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-xs text-muted">
           <span>How the data works:</span>
-          <span className="text-plum">✦ Curated</span> verified by Guud ·
-          <span className="text-sage">🏛 Verified directory</span> real
-          providers from public registries ·
+          <span className="text-plum">✦ Curated</span> vetted by Guud ·
+          <span className="text-sage">🏛 NPI registry</span> real providers
+          from the public U.S. registry (not yet vetted) ·
           <span className="text-plum-dark">✿ Community</span> recommended by
           women
         </p>

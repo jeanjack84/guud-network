@@ -55,15 +55,17 @@ export async function listPractitioners(opts?: {
 
   const result: PractitionerWithTrust[] = filtered.map((p) => {
     const prReviews = byPractitioner.get(p.id) ?? [];
-    // Prefer a review about the filtered category for the card.
+    // Trust + the card quote are based ONLY on real (non-synthetic)
+    // recommendations. Sample reviews are illustrative and never counted.
+    const real = prReviews.filter((r) => !r.synthetic);
     const relevant = opts?.category
-      ? prReviews.filter((r) => r.helpedWith === opts.category)
-      : prReviews;
+      ? real.filter((r) => r.helpedWith === opts.category)
+      : real;
     const topReview =
-      [...(relevant.length ? relevant : prReviews)].sort(
+      [...(relevant.length ? relevant : real)].sort(
         (a, b) => b.rating - a.rating || b.body.length - a.body.length,
       )[0] ?? null;
-    return { ...p, trust: trustStats(prReviews), topReview };
+    return { ...p, trust: trustStats(real), topReview };
   });
 
   return result.sort((a, b) => b.trust.score - a.trust.score);
@@ -86,7 +88,10 @@ export async function getPractitionerBySlug(
     .where(and(eq(reviews.practitionerId, p.id), eq(reviews.status, "approved")))
     .orderBy(desc(reviews.createdAt));
 
-  return { ...p, trust: trustStats(prReviews), reviews: prReviews };
+  // Trust is computed from real recommendations only; synthetic samples are
+  // returned for display (clearly labelled) but never counted in the score.
+  const real = prReviews.filter((r) => !r.synthetic);
+  return { ...p, trust: trustStats(real), reviews: prReviews };
 }
 
 export type NetworkStats = {

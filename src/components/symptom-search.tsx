@@ -8,6 +8,8 @@ import { PractitionerCard } from "./practitioner-card";
 type MatchResponse = {
   empathy: string;
   safetyNote: string | null;
+  regionNote: string | null;
+  location: string | null;
   matchedCategories: Category[];
   practitioners: PractitionerWithTrust[];
 };
@@ -21,21 +23,27 @@ const EXAMPLES = [
 
 export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) {
   const [query, setQuery] = useState("");
+  const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<MatchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showPractitioners, setShowPractitioners] = useState(false);
 
   async function run(q: string) {
     const text = q.trim();
-    if (text.length < 3) return;
+    if (text.length < 3) {
+      setError("Tell us a little more about what you're going through.");
+      return;
+    }
     setLoading(true);
     setError(null);
     setResult(null);
+    setShowPractitioners(false);
     try {
       const res = await fetch("/api/match", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: text }),
+        body: JSON.stringify({ query: text, location: location.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
@@ -47,6 +55,8 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
     }
   }
 
+  const emergency = !!result?.safetyNote;
+
   return (
     <div className="w-full">
       <form
@@ -56,28 +66,47 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
         }}
         className="rounded-xl2 border border-line bg-surface p-3 shadow-sm shadow-plum/5"
       >
+        <label htmlFor="concern" className="sr-only">
+          Describe what you are going through
+        </label>
         <textarea
+          id="concern"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) run(query);
           }}
           rows={3}
+          aria-label="Describe what you are going through"
           placeholder="In your own words, what are you going through? e.g. “Painful sex since my second baby and my GP shrugged.”"
-          className="w-full resize-none rounded-2xl bg-transparent px-4 py-3 text-base text-ink outline-none placeholder:text-muted/70"
+          className="w-full resize-none rounded-2xl bg-transparent px-4 py-3 text-base text-ink outline-none placeholder:text-muted"
         />
-        <div className="flex items-center justify-between gap-3 px-1 pb-1">
-          <p className="hidden text-xs text-muted sm:block">
-            Private. Not stored. Powered by Claude Opus 4.8.
-          </p>
+        <div className="flex flex-col gap-3 px-1 pb-1 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2 rounded-full bg-cream px-3 py-1.5">
+            <span aria-hidden>📍</span>
+            <label htmlFor="location" className="sr-only">
+              Your city or country
+            </label>
+            <input
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Your city or country (helps us find local help)"
+              className="w-full min-w-0 bg-transparent text-sm text-ink outline-none placeholder:text-muted sm:w-64"
+            />
+          </div>
           <button
             type="submit"
-            disabled={loading || query.trim().length < 3}
-            className="ml-auto inline-flex items-center gap-2 rounded-full bg-plum px-5 py-2.5 text-sm font-medium text-cream transition hover:bg-plum-dark disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={loading}
+            className="ml-auto inline-flex items-center gap-2 rounded-full bg-plum px-5 py-2.5 text-sm font-medium text-cream transition hover:bg-plum-dark disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "Finding trusted help…" : "Find help I can trust"}
           </button>
         </div>
+        <p className="px-2 pb-1 text-xs text-muted">
+          Private. Not stored. Powered by Claude Opus 4.8. Not a medical service —
+          not medical advice.
+        </p>
       </form>
 
       {!result && !loading && (
@@ -116,6 +145,10 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
             <p className="font-display text-lg leading-relaxed text-plum-dark">
               {result.empathy}
             </p>
+            <p className="mt-2 text-xs text-muted">
+              The Guud Network is not a medical service and this is not medical
+              advice.
+            </p>
             {result.matchedCategories.length > 0 && (
               <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
                 <span className="text-muted">Matched topics:</span>
@@ -131,32 +164,69 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
             )}
           </div>
 
-          {result.safetyNote && (
+          {/* Emergency: lead with help, gate the directory. */}
+          {emergency ? (
+            <div className="rounded-xl2 border-2 border-rose/60 bg-rose/5 p-6">
+              <h2 className="flex items-center gap-2 font-display text-xl text-plum-dark">
+                ⚠️ This may need urgent care
+              </h2>
+              <p className="mt-2 text-ink">{result.safetyNote}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a href="tel:911" className="rounded-full bg-plum px-4 py-2 text-sm font-medium text-cream hover:bg-plum-dark">
+                  📞 Call 911 (US)
+                </a>
+                <a href="tel:112" className="rounded-full bg-plum px-4 py-2 text-sm font-medium text-cream hover:bg-plum-dark">
+                  📞 Call 112 (EU)
+                </a>
+                <a href="tel:999" className="rounded-full bg-plum px-4 py-2 text-sm font-medium text-cream hover:bg-plum-dark">
+                  📞 Call 999 (UK)
+                </a>
+                <a
+                  href="https://findahelpline.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-plum px-4 py-2 text-sm font-medium text-plum hover:bg-blush"
+                >
+                  Find a helpline near you →
+                </a>
+              </div>
+              {result.practitioners.length > 0 && !showPractitioners && (
+                <button
+                  onClick={() => setShowPractitioners(true)}
+                  className="mt-4 text-sm text-muted underline hover:text-plum"
+                >
+                  I&apos;m safe — show practitioners anyway
+                </button>
+              )}
+            </div>
+          ) : null}
+
+          {result.regionNote && (
             <div className="flex gap-3 rounded-xl2 border border-gold/50 bg-gold/10 p-5 text-sm text-ink">
-              <span aria-hidden className="text-lg">
-                ⚠️
-              </span>
-              <p>{result.safetyNote}</p>
+              <span aria-hidden className="text-lg">📍</span>
+              <p>{result.regionNote}</p>
             </div>
           )}
 
-          {result.practitioners.length > 0 ? (
-            <div>
-              <h2 className="mb-4 font-display text-xl text-ink">
-                Practitioners women trust for this
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {result.practitioners.map((p) => (
-                  <PractitionerCard key={p.id} p={p} catMap={catMap} />
-                ))}
+          {(!emergency || showPractitioners) &&
+            (result.practitioners.length > 0 ? (
+              <div>
+                <h2 className="mb-4 font-display text-xl text-ink">
+                  Practitioners women trust for this
+                  {result.location ? ` near ${result.location}` : ""}
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {result.practitioners.map((p) => (
+                    <PractitionerCard key={p.id} p={p} catMap={catMap} />
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : (
-            <p className="text-muted">
-              We don&apos;t have a trusted match yet for this topic. The network
-              grows every day — check back soon.
-            </p>
-          )}
+            ) : (
+              <p className="text-muted">
+                We don&apos;t have a trusted match yet for this. The network grows
+                every day — you could be the one to add it.
+              </p>
+            ))}
         </div>
       )}
     </div>

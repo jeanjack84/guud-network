@@ -8,6 +8,28 @@ import {
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ topic?: string }>;
+}) {
+  const { topic } = await searchParams;
+  const cat = topic ? await getCategoryBySlug(topic) : null;
+  if (cat) {
+    const title = `${cat.name} specialists women trust`;
+    return {
+      title,
+      description: `${cat.description} Find ${cat.name.toLowerCase()} practitioners that other women recommend on The Guud Network.`,
+      openGraph: { title, url: `/discover?topic=${cat.slug}` },
+    };
+  }
+  return {
+    title: "Browse women's health practitioners by topic",
+    description:
+      "Browse the network by topic to find the practitioners women trust most for each women's health concern.",
+  };
+}
+
 export default async function DiscoverPage({
   searchParams,
 }: {

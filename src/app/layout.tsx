@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "The Guud Network — Find women's health practitioners you can trust",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "The Guud Network — Find women's health practitioners you can trust",
+    template: "%s | The Guud Network",
+  },
   description:
     "A trust-first, open platform to discover women's health practitioners that other women actually recommend. Describe what you're going through and find help you can trust.",
+  openGraph: {
+    siteName: SITE_NAME,
+    type: "website",
+    url: SITE_URL,
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({
