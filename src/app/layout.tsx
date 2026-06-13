@@ -28,16 +28,16 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-cream text-ink">
         <header className="sticky top-0 z-30 border-b border-line/70 bg-cream/80 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-            <Link href="/" className="group flex items-center gap-2.5">
+          <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-5 py-4">
+            <Link href="/" className="group flex items-center gap-2.5 justify-self-start">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-plum text-cream font-display text-lg leading-none">
                 g
               </span>
-              <span className="font-display text-xl font-medium tracking-tight">
+              <span className="font-display text-xl font-medium tracking-tight text-heading">
                 The Guud Network
               </span>
             </Link>
-            <nav className="flex items-center gap-1 text-sm">
+            <nav className="hidden items-center gap-1 text-sm sm:flex sm:justify-self-center">
               <Link
                 href="/discover"
                 className="rounded-full px-3.5 py-2 text-muted transition hover:bg-blush hover:text-plum"
@@ -50,15 +50,23 @@ export default function RootLayout({
               >
                 Recommend someone
               </Link>
+            </nav>
+            <div className="flex items-center gap-2 justify-self-end">
+              <Link
+                href="/practitioners/new"
+                className="rounded-full bg-plum px-4 py-2 text-sm font-medium text-cream transition hover:bg-plum-dark sm:hidden"
+              >
+                Recommend
+              </Link>
               <a
                 href="https://github.com/jeanjack84/guud-network"
                 target="_blank"
                 rel="noreferrer"
-                className="ml-1 rounded-full border border-line px-3.5 py-2 text-ink transition hover:border-plum hover:text-plum"
+                className="hidden rounded-full border border-line px-3.5 py-2 text-ink transition hover:border-plum hover:text-plum sm:inline-block"
               >
                 Open source
               </a>
-            </nav>
+            </div>
           </div>
         </header>
 

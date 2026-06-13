@@ -124,7 +124,7 @@ export default async function PractitionerPage({
         <div className="flex-1">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h1 className="font-display text-3xl text-ink">{p.name}</h1>
+              <h1 className="font-display text-3xl text-heading">{p.name}</h1>
               <p className="text-muted">{p.title}</p>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 <ProvenanceBadge source={p.source} />

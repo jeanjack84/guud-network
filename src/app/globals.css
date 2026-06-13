@@ -30,7 +30,8 @@
   /* Guud palette — warm, earthy, trustworthy (sourced from guud-theme). */
   --color-cream: #f7f6f4; /* warm page background */
   --color-surface: #ffffff;
-  --color-ink: #1c1b1b; /* near-black headings/text */
+  --color-ink: #1c1b1b; /* near-black body text */
+  --color-heading: #7f3914; /* warm brown — Nib Pro editorial headings (from guudwoman.com) */
   --color-muted: #6a6a6a; /* secondary text */
   --color-plum: #893400; /* PRIMARY — Guud terracotta */
   --color-plum-dark: #6b2800; /* primary hover */

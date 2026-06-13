@@ -48,7 +48,7 @@ export default async function DiscoverPage({
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-12">
-      <h1 className="font-display text-3xl text-ink sm:text-4xl">
+      <h1 className="font-display text-3xl text-heading sm:text-4xl">
         {active ? (
           <>
             <span className="mr-2">{active.emoji}</span>

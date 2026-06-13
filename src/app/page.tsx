@@ -26,7 +26,7 @@ export default async function Home() {
           <span className="inline-flex items-center gap-2 rounded-full bg-blush px-3.5 py-1.5 text-xs font-medium text-plum">
             🌸 Trust-first women&apos;s health · open source
           </span>
-          <h1 className="mt-5 font-display text-4xl leading-[1.05] tracking-tight text-ink sm:text-6xl">
+          <h1 className="mt-5 font-display text-4xl leading-[1.05] tracking-tight text-heading sm:text-6xl">
             Find women&apos;s health help
             <br />
             <span className="text-plum">you can actually trust.</span>
@@ -75,7 +75,7 @@ export default async function Home() {
       {/* Browse by topic */}
       <section className="py-12">
         <div className="flex items-end justify-between">
-          <h2 className="font-display text-2xl text-ink">Browse by topic</h2>
+          <h2 className="font-display text-2xl text-heading">Browse by topic</h2>
           <Link
             href="/discover"
             className="text-sm text-plum hover:text-plum-dark"
@@ -105,7 +105,7 @@ export default async function Home() {
       {/* Most trusted */}
       <section className="py-12">
         <div className="flex items-end justify-between">
-          <h2 className="font-display text-2xl text-ink">
+          <h2 className="font-display text-2xl text-heading">
             Most trusted in the network
           </h2>
           <Link

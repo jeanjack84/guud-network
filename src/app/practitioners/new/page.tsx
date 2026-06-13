@@ -25,7 +25,7 @@ export default async function NewPractitionerPage({
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-12">
-      <h1 className="font-display text-3xl text-ink sm:text-4xl">
+      <h1 className="font-display text-3xl text-heading sm:text-4xl">
         Recommend someone who helped you
       </h1>
       <p className="mt-2 text-muted">
