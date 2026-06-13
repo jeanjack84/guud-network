@@ -107,7 +107,7 @@ export async function synthesiseTrust(
 
 export type Moderation = {
   allow: boolean;
-  tone: "positive" | "neutral" | "negative" | "harmful";
+  tone: "positive" | "neutral" | "harmful";
   reason: string;
 };
 
