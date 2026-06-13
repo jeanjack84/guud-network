@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { Category } from "@/db/schema";
 import type { PractitionerWithTrust } from "@/lib/queries";
 import { PractitionerCard } from "./practitioner-card";
+import { DemandCapture } from "./demand-capture";
 
 type MatchResponse = {
   empathy: string;
@@ -27,6 +29,7 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<MatchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [submittedQuery, setSubmittedQuery] = useState("");
 
   async function run(q: string) {
     const text = q.trim();
@@ -34,6 +37,7 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
       setError("Tell us a little more about what you're going through.");
       return;
     }
+    setSubmittedQuery(text);
     setLoading(true);
     setError(null);
     setResult(null);
@@ -229,13 +233,26 @@ export function SymptomSearch({ catMap }: { catMap: Record<string, Category> }) 
                     <PractitionerCard key={p.id} p={p} catMap={catMap} />
                   ))}
                 </div>
+                <p className="mt-4 text-sm text-muted">
+                  Helped by someone who isn&apos;t here?{" "}
+                  <Link href="/practitioners/new" className="text-plum underline">
+                    Recommend a practitioner
+                  </Link>{" "}
+                  and grow the network.
+                </p>
               </div>
-            ) : (
-              <p className="text-muted">
-                We don&apos;t have a trusted match yet for this. The network grows
-                every day — you could be the one to add it.
-              </p>
-            ))}
+            ) : null)}
+
+          {/* Capture demand (and invite supply) when we can't serve this yet. */}
+          {!emergency &&
+            result.matchedCategories.length > 0 &&
+            (result.regionNote || result.practitioners.length === 0) && (
+              <DemandCapture
+                location={result.location}
+                topics={result.matchedCategories.map((c) => c.slug)}
+                query={submittedQuery}
+              />
+            )}
         </div>
       )}
     </div>

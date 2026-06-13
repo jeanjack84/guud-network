@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
-import { practitioners, reviews } from "@/db/schema";
+import { practitioners, reviews, demandSignups } from "@/db/schema";
 import { moderateReview } from "@/lib/ai";
 import { getCategories } from "@/lib/queries";
 import { eq } from "drizzle-orm";
@@ -27,6 +27,40 @@ function slugify(s: string) {
 function clampRating(v: FormDataEntryValue | null) {
   const n = Number(v);
   return Number.isFinite(n) ? Math.min(5, Math.max(1, Math.round(n))) : 5;
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Capture demand when we can't help yet, so we can follow up + know where to recruit. */
+export async function captureDemand(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const email = String(formData.get("email") ?? "").trim();
+  const location = String(formData.get("location") ?? "").trim() || null;
+  const query = String(formData.get("query") ?? "").trim() || null;
+  const topics = String(formData.get("topics") ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  if (!EMAIL_RE.test(email)) {
+    return { ok: false, message: "Please enter a valid email." };
+  }
+
+  await db.insert(demandSignups).values({
+    email,
+    location,
+    topics: topics.length ? topics : null,
+    query,
+  });
+
+  return {
+    ok: true,
+    message: location
+      ? `Thank you. We'll email you the moment we have someone you can reach in ${location}.`
+      : "Thank you. We'll email you the moment we have a match for you.",
+  };
 }
 
 /** Add a recommendation (review) to an existing practitioner. */

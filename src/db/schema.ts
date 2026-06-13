@@ -83,7 +83,23 @@ export const reviews = pgTable(
   (t) => [index("reviews_practitioner_idx").on(t.practitionerId)],
 );
 
+/**
+ * Captured demand: when we can't yet help someone (no local / no in-region
+ * match), we capture an email so we can tell them when we can — and so the
+ * team gets a recruiting heat-map of where supply is most needed.
+ */
+export const demandSignups = pgTable("demand_signups", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull(),
+  location: text("location"),
+  // Category slugs the person was looking for.
+  topics: text("topics").array(),
+  query: text("query"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export type Category = typeof categories.$inferSelect;
 export type Practitioner = typeof practitioners.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
 export type NewReview = typeof reviews.$inferInsert;
+export type DemandSignup = typeof demandSignups.$inferSelect;
